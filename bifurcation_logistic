@@ -1,0 +1,121 @@
+library(shiny)
+library(ggplot2)
+
+pop <- function(A, x0){
+  x <- rep(NA, 1000)
+  x[1] <- x0
+  for (i in 2:1000) {
+    x[i] <- x[i - 1] * A * (1 - x[i - 1])
+  }
+  return(x)
+}
+
+cobweb <- function(A, x0) {
+  # plot(X, Y, type = 'l')
+  # abline(0, 1)
+  x1 <- x0
+  x2 <- A * x1 * (1 - x1)
+  lines(c(x1, x1), c(ifelse(x1 < 0, 0, x1), x2), 
+        col = 'steelblue', lw = 3)
+  for (i in 1:100) {
+    lines(c(x1, x2), c(x2, x2), col = 'steelblue', lw = 3)
+    x1 <- x2
+    x2 <- A * x1 * (1 - x1)
+    lines(c(x1, x1), c(x1, x2), col = 'steelblue', lw = 3)
+  }
+}
+
+
+# Define UI for application that draws a histogram
+ui <- fluidPage(
+  # Application title
+  titlePanel("Simple models, complicated dynamics"),
+  
+  # Sidebar with a slider input for number of bins 
+  sidebarLayout(
+    # Show a plot of the generated distribution
+    mainPanel(
+      width = 12,
+      plotOutput("distPlot", height = "600px")
+    ),
+    sidebarPanel(width = 12,
+                 sliderInput("a",
+                             "A:",
+                             min = 0,
+                             max = 4,
+                             value = 1,
+                             step = 0.1),
+                 sliderInput("x0",
+                             "Initial population number:",
+                             min = 0,
+                             max = 0.5,
+                             value = 0.01,
+                             step = 0.01)
+    )
+  ),
+  sidebarLayout(
+    sidebarPanel(width = 12,
+                 sliderInput("a_min",
+                             "A min",
+                             min = 0,
+                             max = 3.9,
+                             value = 0,
+                             step = 0.01),
+                 sliderInput("a_max",
+                             "A max",
+                             min = 0.1,
+                             max = 4,
+                             value = 4,
+                             step = 0.01)
+    ),
+    mainPanel(
+      width = 12,
+      plotOutput("bifPlot", height = "600px")
+    )
+  )
+)
+
+# Define server logic required to draw a histogram
+server <- function(input, output, session) {
+  X <- seq(0, 1, length.out = 100)
+  dynamics <- reactive({
+    Y <- input$a * X * (1 - X)
+    Y
+  })
+  output$distPlot <- renderPlot({
+    par(bg = 'grey95', cex.lab = 1)
+    plot(X, dynamics(), type = 'l', 
+         xlim = c(0, 1), ylim = c(0, 1), 
+         cex = 3, col = 'black', 
+         xlab = expression('N'[t]),
+         ylab = expression('N'[t + 1]),
+         frame.plot = FALSE)
+    lines(X, dynamics(), lw = 3)
+    abline(0, 1, lty = 2)
+    cobweb(input$a, input$x0)
+  })
+  output$bifPlot <- renderPlot({
+    a <- seq(input$a_min, input$a_max, length.out = 1000)
+    y <- sapply(a, function(x) round(pop(x, 0.5), 2))
+    par(bg = 'black', col.axis = 'white',
+        col.lab = 'white', col.sub = 'white')
+    plot(seq(input$a_min, input$a_max, length.out = 4), 
+         seq(0, 1, length.out = 4), cex = 0, axes = FALSE,
+         frame = FALSE, xlab = 'A', ylab = 'N')
+    axis(round(seq(input$a_min, input$a_max, length.out = 5), 2), 
+         side = 1, col = 'white')
+    axis(0:10 / 10, col = 'white', side = 2)
+    for (i in 1:length(a)) {
+      z <- unique(y[900:1000, i])
+      points(rep(a[i], length(z)), z, 
+             pch = 20, cex = 0.1,
+             col = ifelse(length(z) < 16, 
+                          viridis::viridis(16)[length(z)],
+                          'tomato'))
+    }
+  })
+  outputOptions(output, "distPlot", suspendWhenHidden = FALSE)  
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)

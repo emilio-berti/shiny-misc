@@ -22,7 +22,9 @@ shinyApp(
     )
   ),
   server = function(input, output) {
-    d <- read_csv("joblog.csv") %>% 
+    d <- read_csv(file.path("https://raw.githubusercontent.com", 
+                            "emilio-berti/shiny-misc",
+                            "master/joblog.csv")) %>% #remote csv
       mutate(Week = isoweek(Date))
     n <- d %>% 
       group_by(Week) %>% 
@@ -40,7 +42,7 @@ shinyApp(
     output$message <- renderText({
       m <- n %>% 
         arrange(desc(Week)) %>% 
-        filter(Week > isoweek(today) - 4) %>% 
+        filter(Week > isoweek(today()) - 4) %>% 
         pull(n) %>% 
         sum()
       if (m >= 6) {

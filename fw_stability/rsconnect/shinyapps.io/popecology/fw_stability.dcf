@@ -1,0 +1,12 @@
+name: fw_stability
+title: fw_stability
+username:
+account: popecology
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2346048
+bundleId: 3181909
+url: https://popecology.shinyapps.io/fw_stability/
+when: 1590245772.13641
+asMultiple: FALSE
+asStatic: FALSE

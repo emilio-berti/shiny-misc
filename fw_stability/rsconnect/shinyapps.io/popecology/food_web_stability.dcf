@@ -1,0 +1,12 @@
+name: food_web_stability
+title: food_web_stability
+username:
+account: popecology
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2346181
+bundleId: 3181913
+url: https://popecology.shinyapps.io/food_web_stability/
+when: 1590245943.75583
+asMultiple: FALSE
+asStatic: FALSE
